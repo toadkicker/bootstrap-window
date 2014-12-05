@@ -47,9 +47,6 @@ var Window = null;
         } else {
             throw new Error("No template specified for window.");
         }
-        if (!this.$el.hasClass('window')) {
-            this.$el.addClass('window');
-        }
 
         options.elements.handle = this.$el.find(options.selectors.handle);
         options.elements.title = this.$el.find(options.selectors.title);
@@ -395,6 +392,9 @@ var Window = null;
                 this.find(window_opts.selectors.handle).css('cursor', 'move');
             }
 
+            if (!$(this).hasClass('window')) {
+                $(this).addClass('window');
+            }
             newWindow = new Window($.extend({}, window_opts, window_opts));
             this.data('window', newWindow);
             

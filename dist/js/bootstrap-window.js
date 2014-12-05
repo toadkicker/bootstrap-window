@@ -36,19 +36,16 @@ var Window = null;
 
         if (options.fromElement) {
             if (options.fromElement instanceof jQuery) {
-                this.$el = options.clone ? options.fromElement.clone() : options.fromElement;
+                this.$el = options.fromElement;
             } else if (options.fromElement instanceof Element) {
-                this.$el = options.clone ? $(options.fromElement).clone() : $(options.fromElement);
+                this.$el = $(options.fromElement);
             } else if (typeof options.fromElement) {
-                this.$el = options.clone ? $(options.fromElement).clone() : $(options.fromElement);
+                this.$el = $(options.fromElement);
             }
         } else if (options.template) {
             this.$el = $(options.template);
         } else {
             throw new Error("No template specified for window.");
-        }
-        if (!this.$el.hasClass('window')) {
-            this.$el.addClass('window');
         }
 
         options.elements.handle = this.$el.find(options.selectors.handle);
@@ -395,6 +392,9 @@ var Window = null;
                 this.find(window_opts.selectors.handle).css('cursor', 'move');
             }
 
+            if (!$(this).hasClass('window')) {
+                $(this).addClass('window');
+            }
             newWindow = new Window($.extend({}, window_opts, window_opts));
             this.data('window', newWindow);
             
@@ -431,9 +431,6 @@ var Window = null;
 
         if ($this.data('windowHandle')) {
             opts.selectors.handle = $this.data('windowHandle');
-        }
-        if ($this.data('clone')) {
-            opts.clone = $this.data('windowHandle');
         }
 
         $($this.data('windowTarget')).window(opts); 
