@@ -36,11 +36,11 @@ var Window = null;
 
         if (options.fromElement) {
             if (options.fromElement instanceof jQuery) {
-                this.$el = options.fromElement;
+                this.$el = options.clone ? options.fromElement.clone() : options.fromElement;
             } else if (options.fromElement instanceof Element) {
-                this.$el = $(options.fromElement);
+                this.$el = options.clone ? $(options.fromElement).clone() : $(options.fromElement);
             } else if (typeof options.fromElement) {
-                this.$el = $(options.fromElement);
+                this.$el = options.clone ? $(options.fromElement).clone() : $(options.fromElement);
             }
         } else if (options.template) {
             this.$el = $(options.template);
@@ -431,6 +431,9 @@ var Window = null;
 
         if ($this.data('windowHandle')) {
             opts.selectors.handle = $this.data('windowHandle');
+        }
+        if ($this.data('clone')) {
+            opts.clone = $this.data('windowHandle');
         }
 
         $($this.data('windowTarget')).window(opts); 
