@@ -130,6 +130,7 @@ var Window = null;
     Window.prototype.restore = function() {
         this.$el.removeClass('minimized');
         this.$el.removeClass('maximized');
+        this.$el.removeAttr('style');
         this.state = undefined;
         this.$el.css({
             top: this.window_info.top,
@@ -169,8 +170,8 @@ var Window = null;
             this.window_info = {
                 top: this.$el.position().top,
                 left: this.$el.position().left,
-                width: this.$el.width(),
-                height: this.$el.height()
+                width: this.$el.outerWidth(),
+                height: this.$el.outerHeight()
             };
         }
 
@@ -304,8 +305,8 @@ var Window = null;
                 _this.window_info = {
                     top: _this.$el.position().top,
                     left: _this.$el.position().left,
-                    width: _this.$el.width(),
-                    height: _this.$el.height()
+                    width: _this.$el.outerWidth(),
+                    height: _this.$el.outerHeight()
                 };
 
                 if (event.offsetY < 5) {
@@ -363,6 +364,8 @@ var Window = null;
                 _this.window_info.top = event.pageY - _this.offset.y;
                 _this.$el.css('left', event.pageX - _this.offset.x);
                 _this.window_info.left = event.pageX - _this.offset.x;
+                _this.window_info.width = _this.$el.outerWidth();
+                _this.window_info.height = _this.$el.outerHeight();
             }
             if (_this.options.resizable && _this.resizing) {
                 if (_this.$el.hasClass("east")) {
