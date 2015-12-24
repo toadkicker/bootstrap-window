@@ -1,11 +1,8 @@
 @import "variables.less";
 @import "mixins.less";
-
 @import "common.less";
-
 @border: #e5e5e5;
 @borderRadius: 6px;
-
 .window {
     max-width: 800px;
     position: absolute;
@@ -17,9 +14,24 @@
     border-radius: @borderRadius;
     outline: 0;
     background-clip: padding-box;
-    -webkit-box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-
+    -webkit-box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    &.maximized {
+        .window-header {
+            cursor: default;
+        }
+        .window-footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+        }
+        [data-maximize=window] {
+            display: none;
+        }
+        [data-restore=window] {
+            display: inline-block;
+        }
+    }
     .window-header {
         cursor: move;
         min-height: 16.428571429px;
@@ -30,11 +42,11 @@
             margin: 0;
             line-height: 1.428571429;
         }
-
     }
     .window-body {
         position: relative;
         padding: @modal-inner-padding;
+        overflow-y: auto;
     }
     .window-body.disable-scroll {
         .disable-scroll;
@@ -57,10 +69,49 @@
     .window-footer.disable-scroll {
         .disable-scroll;
     }
-    [data-dismiss=window] {
-        visibility: visible;
+    [data-maximize=window] {
+        color: #000000;
+        cursor: pointer;
+        background: transparent;
+        border: 0;
+        -webkit-appearance: none;
+        float: right;
+        line-height: 21px;
+        i {
+            line-height: 21px;
+            opacity: 0.2;
+        }
+        font-size: 12px;
     }
-
+    [data-restore=window] {
+        color: #000000;
+        cursor: pointer;
+        background: transparent;
+        border: 0;
+        -webkit-appearance: none;
+        float: right;
+        line-height: 21px;
+        display: none;
+        i {
+            line-height: 21px;
+            opacity: 0.2;
+        }
+        font-size: 12px;
+    }
+    [data-dismiss=window] {
+        color: #000000;
+        cursor: pointer;
+        background: transparent;
+        border: 0;
+        -webkit-appearance: none;
+        visibility: visible;
+        font-size: 12px;
+        opacity: 1.0;
+        i {
+            line-height: 21px;
+            opacity: 0.2;
+        }
+    }
 }
 
 .window.ns-resize {
@@ -86,7 +137,7 @@
 .disable-shade {
     width: 100%;
     height: 100%;
-    position:absolute;
+    position: absolute;
     top: 0;
     left: 0;
     background-color: rgba(255, 255, 255, 0.5);

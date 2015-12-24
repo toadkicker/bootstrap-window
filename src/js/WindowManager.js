@@ -49,7 +49,7 @@ var WindowManager = null;
             }
         });
         this.windows.push(this.windows.splice(focusedWindowIndex, 1)[0]);
-        
+
 
         focused_window.setActive(true);
         this.resortWindows();
@@ -58,13 +58,24 @@ var WindowManager = null;
 
     WindowManager.prototype.initialize = function(options) {
         this.options = options;
+        this.elements = {};
+
         if (this.options.container) {
-            $(this.options.container).addClass('window-pane');
+            this.elements.container = $(this.options.container);
+            this.elements.container.addClass('window-pane');
         }
     };
 
-    WindowManager.prototype.setNextFocused = function () {
-        this.setFocused(this.windows[this.windows.length-1]);
+    WindowManager.prototype.getContainer = function () {
+        var returnVal;
+        if (this.elements && this.elements.container) {
+            returnVal = this.elements.container;
+        }
+        return returnVal;
+    };
+
+    WindowManager.prototype.setNextFocused = function() {
+        this.setFocused(this.windows[this.windows.length - 1]);
     };
 
     WindowManager.prototype.addWindow = function(window_object) {
@@ -110,8 +121,8 @@ var WindowManager = null;
         }
 
         var newWindow = new Window(final_options);
-        
-        
+
+
         return this.addWindow(newWindow);
     };
 }(jQuery));

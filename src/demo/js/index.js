@@ -8,7 +8,8 @@
         table_counter = 0,
         form_counter = 0,
         parent_counter = 0,
-        child_counter = 0;
+        child_counter = 0,
+        maximizable_counter = 0;
     
     $('.new_basic').on('click', function (event) {
         event.preventDefault();
@@ -57,6 +58,15 @@
             footerContent: '<button type="button" class="btn btn-default" data-dismiss="window">Close</button><button type="button" class="btn btn-primary">Submit</button>'
         });
     });
-    
+    $('.new_maximizable').on('click', function (event) {
+        event.preventDefault();
+        maximizable_counter++;
+        wm.createWindow({
+            title: "Maximizable Window #" + maximizable_counter,
+            bodyContent: "<p>One fine body...</p>",
+            footerContent: '<button type="button" class="btn btn-default" data-dismiss="window">Close</button><button type="button" class="btn btn-primary">Submit</button>',
+            maximizable: true
+        });
+    });
 
 }(jQuery));
