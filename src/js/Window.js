@@ -21,6 +21,7 @@ var Window = null;
                 body: $('body'),
                 window: $(window)
             },
+            effect: 'fade',
             parseHandleForTitle: true,
             maximized: false,
             maximizable: false,
@@ -147,15 +148,27 @@ var Window = null;
     Window.prototype.show = function(cb) {
         var _this = this;
         this.$el.css('visibility', 'visible');
-        this.$el.fadeIn(undefined, undefined, function () {
+        var callbackHandler = function() {
             _this.$el.trigger(namespace + '.show');
             if (cb) {
-                cb.call(_this, arguments);    
+                cb.call(_this, arguments);
             }
-            
-        });
 
+        }
+        if (this.options.effect === 'fade') {
+            this.$el.fadeIn(undefined, undefined, callbackHandler);
+        } else {
+            callbackHandler.call(this.$el);
+        }
     };
+
+    Window.prototype.setEffect = function(effect) {
+        this.options.effect = effect;
+    }
+
+    Window.prototype.getEffect = function() {
+        return this.options.effect;
+    }
 
     Window.prototype.centerWindow = function() {
         var top, left,
@@ -202,20 +215,31 @@ var Window = null;
         } else if (this.options.window_manager && this.options.window_manager.windows.length > 0) {
             this.options.window_manager.setNextFocused();
         }
-        this.$el.fadeOut(function() {
+
+        var closeFn = function() {
+            _this.$el.trigger(namespace + '.close');
             _this.$el.remove();
             if (cb) {
                 cb.call(_this);
             }
-            _this.$el.trigger(namespace + '.close');
-        });
+        };
+
+        if (this.options.effect === 'fade') {
+            this.$el.fadeOut(closeFn);
+        } else {
+            closeFn.call(_this.$el);
+        }
+
         if (this.$windowTab) {
             this.$windowTab.fadeOut(400, function() {
                 _this.$windowTab.remove();
             });
         }
-
     };
+
+    Window.prototype.on = function() {
+        this.$el.on.apply(this.$el, arguments);
+    }
 
     Window.prototype.setActive = function(active) {
         if (active) {
@@ -223,12 +247,14 @@ var Window = null;
             if (this.$windowTab) {
                 this.$windowTab.addClass('label-primary');
             }
+            this.$el.trigger('active');
         } else {
             this.$el.removeClass('active');
             if (this.$windowTab) {
                 this.$windowTab.removeClass('label-primary');
                 this.$windowTab.addClass('label-default');
             }
+            this.$el.trigger('inactive');
         }
     };
 
@@ -496,9 +522,9 @@ var Window = null;
                     _this.$el.addClass('active');
                 }
                 if (windowTab && focused) {
-                    windowTab.addClass('label-primary');    
+                    windowTab.addClass('label-primary');
                 }
-                
+
             }, 1000);
     };
 
