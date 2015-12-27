@@ -66,7 +66,7 @@ var WindowManager = null;
         }
     };
 
-    WindowManager.prototype.getContainer = function () {
+    WindowManager.prototype.getContainer = function() {
         var returnVal;
         if (this.elements && this.elements.container) {
             returnVal = this.elements.container;
@@ -94,14 +94,24 @@ var WindowManager = null;
         if (this.options.container) {
             window_object.setWindowTab($('<span class="label label-default">' + window_object.getTitle() + '<button class="close">x</button></span>'));
             window_object.getWindowTab().find('.close').on('click', function(event) {
-                window_object.close();
-            });
-            window_object.getWindowTab().on('click', function(event) {
-                _this.setFocused(window_object);
-                if (window_object.getSticky()) {
-                    window.scrollTo(0, window_object.getElement().position().top);
+                var blocker = window_object.getBlocker();
+                if (!blocker) {
+                    window_object.close();
+                } else {
+                    blocker.blink();
                 }
 
+            });
+            window_object.getWindowTab().on('click', function(event) {
+                var blocker = window_object.getBlocker();
+                if (!blocker) {
+                    _this.setFocused(window_object);
+                    if (window_object.getSticky()) {
+                        window.scrollTo(0, window_object.getElement().position().top);
+                    }
+                } else {
+                    blocker.blink();
+                }
             });
 
             $(this.options.container).append(window_object.getWindowTab());

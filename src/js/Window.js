@@ -464,14 +464,25 @@ var Window = null;
         var _this = this,
             active = this.$el.hasClass('active'),
 
+            windowTab = this.getWindowTab(),
+            focused = windowTab ? windowTab.hasClass('label-primary') : undefined,
+
             blinkInterval = setInterval(function() {
                 _this.$el.toggleClass('active');
+                if (windowTab) {
+                    windowTab.toggleClass('label-primary');
+                }
+
             }, 250),
             blinkTimeout = setTimeout(function() {
                 clearInterval(blinkInterval);
                 if (active) {
                     _this.$el.addClass('active');
                 }
+                if (windowTab && focused) {
+                    windowTab.addClass('label-primary');    
+                }
+                
             }, 1000);
     };
 

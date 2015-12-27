@@ -1,6 +1,6 @@
 # bootstrap-window [![Build Status](https://secure.travis-ci.org/earmbrust/bootstrap-window.png?branch=master)](http://travis-ci.org/earmbrust/bootstrap-window)
 
-> bootstrap-window is a bootstrap 3.0.0 compatible window and window management solution.  bootstrap-window provides the ability to create event driven windows based on the bootstrap styles.
+> bootstrap-window is a bootstrap 3.x compatible window and window management solution.  bootstrap-window provides the ability to create event driven windows based on the bootstrap styles.
 
 
 
@@ -64,7 +64,8 @@ Quick Windows can be created via a simple markup API.
 <a class="btn" data-window-target="#windowElementSelector" data-window-title="Window Title" data-window-handle=".handleSelector" data-title-handle=".titleSelector">
 ```
 ## Release History
- * 2015-12-24	v0.3.0	Add maximizable window capability, fix various small bugs
+ * 2015-12-26   v0.3.1  Fix for issue #4
+ * 2015-12-24   v0.3.0  Add maximizable window capability, fix various small bugs
  * 2013-11-29   v0.2.2  Fix for quick windows not being draggable, fix for quick window titles not displaying
  * 2013-11-04   v0.2.1  Fix for responsive windows on orientation change
  * 2013-11-04   v0.2.0  Windows are now responsive!
