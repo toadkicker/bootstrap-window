@@ -64,8 +64,8 @@ Quick Windows can be created via a simple markup API.
 <a class="btn" data-window-target="#windowElementSelector" data-window-title="Window Title" data-window-handle=".handleSelector" data-title-handle=".titleSelector">
 ```
 ## Release History
- * 2015-12-26   v0.3.1  Fix for issue #4
- * 2015-12-24   v0.3.0  Add maximizable window capability, fix various small bugs
+ * 2015-12-26   v0.3.1  Fix for issue #4, add ability to send windows to 'back', added multiple tests
+ * 2015-12-24   v0.3.0  Add maximizable window capability, fix various small bugs
  * 2013-11-29   v0.2.2  Fix for quick windows not being draggable, fix for quick window titles not displaying
  * 2013-11-04   v0.2.1  Fix for responsive windows on orientation change
  * 2013-11-04   v0.2.0  Windows are now responsive!
