@@ -103,6 +103,10 @@ var WindowManager = null;
 
         });
 
+        window_object.on('bsw.restore', function() {
+            _this.resortWindows();
+        });
+
         if (this.options.container) {
             window_object.setWindowTab($('<span class="label label-default">' + window_object.getTitle() + '<button class="close">x</button></span>'));
             window_object.getWindowTab().find('.close').on('click', function(event) {
