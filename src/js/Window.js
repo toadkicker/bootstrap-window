@@ -21,10 +21,25 @@ var Window = null;
                 body: $('body'),
                 window: $(window)
             },
+            interface: {
+                buttons: {
+                    minimize: {
+                        class: "glyphicon glyphicon-minus"
+                    },
+                    maximize: {
+                        class: "glyphicon glyphicon-plus"
+                    },
+                    restore: {
+                        class: "glyphicon glyphicon-modal-window"
+                    }
+                }
+            },
             effect: 'fade',
             parseHandleForTitle: true,
             maximized: false,
             maximizable: false,
+            minimized: false,
+            minimizable: false,
             title: 'No Title',
             bodyContent: '',
             footerContent: ''
@@ -65,16 +80,26 @@ var Window = null;
         options.elements.footer = this.$el.find(options.selectors.footer);
         options.elements.title.html(options.title);
 
+
+        if (options.minimizable) {
+            options.elements.buttons = {};
+            options.elements.buttons.minimize = $('<button data-minimize="window" class="interface"><i class="' + options.interface.buttons.minimize.class + '"></i></button>');
+            options.elements.handle.prepend(options.elements.buttons.minimize);
+        }
+
         if (options.maximizable) {
             options.elements.buttons = {};
-            options.elements.buttons.maximize = $('<button data-maximize="window"><i class="glyphicon glyphicon-chevron-up"></i></button>');
+            options.elements.buttons.maximize = $('<button data-maximize="window" class="interface"><i class="' + options.interface.buttons.maximize.class + '"></i></button>');
             options.elements.handle.prepend(options.elements.buttons.maximize);
-            options.elements.buttons.restore = $('<button data-restore="window"><i class="glyphicon glyphicon-modal-window"></i></button>');
-            options.elements.handle.prepend(options.elements.buttons.restore);
-
         }
+        if (options.maximizable || options.minimizable) {
+            options.elements.buttons.restore = $('<button data-restore="window" class="interface"><i class="' + options.interface.buttons.restore.class + '"></i></button>');
+            options.elements.handle.prepend(options.elements.buttons.restore);
+        }
+
+
         if (_this.$el.find('[data-dismiss=window]').length <= 0) {
-            options.elements.handle.prepend('<button type="button" class="close" data-dismiss="window" aria-hidden="true"><i class="glyphicon glyphicon-remove"></i></button>');
+            options.elements.handle.prepend('<button type="button" class="close interface" data-dismiss="window" aria-hidden="true"><i class="glyphicon glyphicon-remove"></i></button>');
         }
         options.elements.body.html(options.bodyContent);
         options.elements.footer.html(options.footerContent);
@@ -129,19 +154,59 @@ var Window = null;
         this.$el.trigger(namespace + '.maximize');
     };
 
+    Window.prototype.minimize = function() {
+        var _this = this;
+        this.$el.removeClass('maximized');
+        this.$el.addClass('minimized');
+
+        this.state = "minimized";
+        var bottomOffset = 0;
+        if (this.options.window_manager) {
+
+        }
+        if (this.options.effect === "fade") {
+            this.$el.fadeOut(function() {
+                _this.$el.removeAttr('style');
+            });
+        } else {
+            this.$el.hide();
+            this.$el.removeAttr('style');
+        }
+        this.$el.trigger(namespace + '.minimize');
+    };
+
+    Window.prototype.isMinimized = function() {
+        return this.state === "minimized";
+    };
+
+    Window.prototype.isMaximized = function() {
+        return this.state === "maximized";
+    };
 
     Window.prototype.restore = function() {
         this.$el.removeClass('minimized');
         this.$el.removeClass('maximized');
-        this.$el.removeAttr('style');
-        this.state = undefined;
-        this.$el.css({
+        var position = {
             top: this.window_info.top,
             left: this.window_info.left,
             width: this.window_info.width,
             height: this.window_info.height
-        });
-        this.$el.removeProp('style');
+        };
+        if (this.isMinimized()) {
+            if (this.options.effect === "fade") {
+                this.$el.attr('style', "display: none;");
+                this.$el.css(position);
+                this.$el.fadeIn();
+            } else {
+                this.$el.attr('style', "display: none;");
+                this.$el.css(position);
+                this.$el.show();
+            }
+        } else {
+            this.$el.removeAttr('style');
+            this.$el.css(position);
+        }
+        this.state = undefined;
         this.$el.trigger(namespace + '.restore');
     };
 
@@ -155,7 +220,7 @@ var Window = null;
             }
         };
         if (this.options.effect === 'fade') {
-            this.$el.fadeIn(undefined, undefined, callbackHandler);
+            this.$el.fadeIn(undefined, callbackHandler);
         } else {
             callbackHandler.call(this.$el);
         }
@@ -245,7 +310,7 @@ var Window = null;
         this.$el.on.apply(this.$el, arguments);
     };
 
-    Window.prototype.sendToBack = function () {
+    Window.prototype.sendToBack = function() {
         var returnVal = false;
         if (this.options.window_manager) {
             returnVal = this.options.window_manager.sendToBack(this);
@@ -330,6 +395,15 @@ var Window = null;
                 return;
             }
             _this.maximize();
+        });
+
+        this.$el.find('[data-minimize=window]').on('click', function(event) {
+            event.stopPropagation();
+            event.preventDefault();
+            if (_this.options.blocker) {
+                return;
+            }
+            _this.minimize();
         });
 
         this.$el.find('[data-restore=window]').on('click', function(event) {

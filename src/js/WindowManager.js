@@ -121,6 +121,9 @@ var WindowManager = null;
             window_object.getWindowTab().on('click', function(event) {
                 var blocker = window_object.getBlocker();
                 if (!blocker) {
+                    if (window_object.isMinimized()) {
+                        window_object.restore();
+                    }
                     _this.setFocused(window_object);
                     if (window_object.getSticky()) {
                         window.scrollTo(0, window_object.getElement().position().top);

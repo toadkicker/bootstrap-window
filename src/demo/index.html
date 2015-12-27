@@ -41,8 +41,13 @@
                     <li class="new_parent">
                         <a href="#">Add Parent Window</a>
                     </li>
-                    <li class="new_maximizable">
-                        <a href="#">Add Maximizable Window</a>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Resizable <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li class="new_maximizable"><a href="#">Add Maximizable Window</a></li>
+                            <li class="new_minimizable"><a href="#">Add Minimizable Window</a></li>
+                            <li class="new_minmax"><a href="#">Add Min/Max Window</a></li>
+                        </ul>
                     </li>
                     <li class="new_modal">
                         <a data-toggle="modal" href="#myModal">Add Modal</a>
@@ -830,7 +835,6 @@
             </div>
         </div>
     </script>
-
     <script type="text/template" id="parent_window_body">
         <button type="button" class="btn btn-default new_child">Open child</button>
     </script>
@@ -863,9 +867,9 @@
         <!-- /.modal-dialog -->
     </div>
     <!-- /.modal -->
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.10.2/jquery.js"></script>
-    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.1/js/bootstrap.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/7.3/highlight.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script type="text/javascript" src="//netdna.bootstrapcdn.com/bootstrap/3.0.1/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/7.3/highlight.min.js"></script>
     <script type="text/javascript" src="js/bootstrap-window.js"></script>
     <script type="text/javascript" src="js/index.js"></script>
 </body>
