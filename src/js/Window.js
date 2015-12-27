@@ -205,7 +205,6 @@ var Window = null;
 
     Window.prototype.close = function(cb) {
         var _this = this;
-        this.$el.trigger('close');
         if (this.options.parent) {
             this.options.parent.clearBlocker();
             if (this.options.window_manager) {
@@ -244,6 +243,14 @@ var Window = null;
 
     Window.prototype.on = function() {
         this.$el.on.apply(this.$el, arguments);
+    };
+
+    Window.prototype.sendToBack = function () {
+        var returnVal = false;
+        if (this.options.window_manager) {
+            returnVal = this.options.window_manager.sendToBack(this);
+        }
+        return returnVal;
     };
 
     Window.prototype.setActive = function(active) {

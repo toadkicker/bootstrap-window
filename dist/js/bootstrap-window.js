@@ -205,7 +205,6 @@ var Window = null;
 
     Window.prototype.close = function(cb) {
         var _this = this;
-        this.$el.trigger('close');
         if (this.options.parent) {
             this.options.parent.clearBlocker();
             if (this.options.window_manager) {
@@ -244,6 +243,14 @@ var Window = null;
 
     Window.prototype.on = function() {
         this.$el.on.apply(this.$el, arguments);
+    };
+
+    Window.prototype.sendToBack = function () {
+        var returnVal = false;
+        if (this.options.window_manager) {
+            returnVal = this.options.window_manager.sendToBack(this);
+        }
+        return returnVal;
     };
 
     Window.prototype.setActive = function(active) {
@@ -628,13 +635,19 @@ var Window = null;
 
     WindowManager.prototype.destroyWindow = function(window_handle) {
         var _this = this;
+        var returnVal = false;
         $.each(this.windows, function(index, window) {
             if (window === window_handle) {
+                window_handle.close();
                 _this.windows.splice(index, 1);
                 _this.resortWindows();
+                returnVal = true;
             }
         });
+        return returnVal;
     };
+
+    WindowManager.prototype.closeWindow = WindowManager.prototype.destroyWindow;
 
     WindowManager.prototype.resortWindows = function() {
         var startZIndex = 900;
@@ -656,12 +669,18 @@ var Window = null;
             }
         });
         this.windows.push(this.windows.splice(focusedWindowIndex, 1)[0]);
-
-
         focused_window.setActive(true);
         this.resortWindows();
 
     };
+
+    WindowManager.prototype.sendToBack = function(window) {
+        var windowHandle = this.windows.splice(this.windows.indexOf(window), 1)[0];
+        this.windows.unshift(windowHandle);
+        this.resortWindows();
+        return true;
+    };
+
 
     WindowManager.prototype.initialize = function(options) {
         this.options = options;
