@@ -230,9 +230,15 @@ var Window = null;
         }
 
         if (this.$windowTab) {
-            this.$windowTab.fadeOut(400, function() {
-                _this.$windowTab.remove();
-            });
+            if (this.options.effect === 'fade') {
+                this.$windowTab.fadeOut(400, function() {
+                    _this.$windowTab.remove();
+                });
+            } else {
+                this.$windowTab.hide();
+                this.$windowTab.remove();
+            }
+
         }
     };
 
@@ -471,7 +477,12 @@ var Window = null;
         this.options.elements.body.append(shade);
         this.options.elements.body.addClass('disable-scroll');
         this.options.elements.footer.append(shade);
-        this.$el.find('.disable-shade').fadeIn();
+        if (this.options.effect === 'fade') {
+            this.$el.find('.disable-shade').fadeIn();
+        } else {
+            this.$el.find('.disable-shade').show();
+        }
+
         if (!this.options.blocker.getParent()) {
             this.options.blocker.setParent(this);
         }
@@ -484,9 +495,15 @@ var Window = null;
 
     Window.prototype.clearBlocker = function() {
         this.options.elements.body.removeClass('disable-scroll');
-        this.$el.find('.disable-shade').fadeOut(function() {
+        if (this.options.effect === 'fade') {
+            this.$el.find('.disable-shade').fadeOut(function() {
+                this.remove();
+            });
+        } else {
+            this.$el.find('.disable-shade').hide();
             this.remove();
-        });
+        }
+
         delete this.options.blocker;
     };
 
