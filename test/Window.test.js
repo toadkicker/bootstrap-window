@@ -1,4 +1,5 @@
 (function($) {
+    'use strict';
     var win,
         testing_options = {
             template: $('#template').html(),
@@ -98,7 +99,7 @@
         setTimeout(function() {
             done();
         }, 2000);
-    })
+    });
 
 
     QUnit.test('eventTriggers (fade effect)', function(assert) {
@@ -122,12 +123,12 @@
         win.on('bsw.close', function() {
             ok(true, "close trigger fires properly");
         });
-        win.close()
+        win.close();
 
 
         setTimeout(function() {
             done();
-        }, 2000)
+        }, 2000);
     });
 
 
@@ -154,12 +155,12 @@ QUnit.test('eventTriggers (no effect)', function(assert) {
         win.on('bsw.close', function() {
             ok(true, "close trigger fires properly");
         });
-        win.close()
+        win.close();
 
 
         setTimeout(function() {
             done();
-        }, 2000)
+        }, 2000);
     });
 
 

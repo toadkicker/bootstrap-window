@@ -1,6 +1,7 @@
 var Window = null;
 (function($) {
     "use strict";
+    var namespace = 'bsw';
     Window = function(options) {
         options = options || {};
         var defaults = {
@@ -20,6 +21,7 @@ var Window = null;
                 body: $('body'),
                 window: $(window)
             },
+            effect: 'fade',
             parseHandleForTitle: true,
             maximized: false,
             maximizable: false,
@@ -124,6 +126,7 @@ var Window = null;
             width: 'auto',
             height: 'auto'
         });
+        this.$el.trigger(namespace + '.maximize');
     };
 
 
@@ -139,11 +142,31 @@ var Window = null;
             height: this.window_info.height
         });
         this.$el.removeProp('style');
+        this.$el.trigger(namespace + '.restore');
     };
 
-    Window.prototype.show = function() {
+    Window.prototype.show = function(cb) {
+        var _this = this;
         this.$el.css('visibility', 'visible');
-        this.$el.fadeIn();
+        var callbackHandler = function() {
+            _this.$el.trigger(namespace + '.show');
+            if (cb) {
+                cb.call(_this, arguments);
+            }
+        };
+        if (this.options.effect === 'fade') {
+            this.$el.fadeIn(undefined, undefined, callbackHandler);
+        } else {
+            callbackHandler.call(this.$el);
+        }
+    };
+
+    Window.prototype.setEffect = function(effect) {
+        this.options.effect = effect;
+    };
+
+    Window.prototype.getEffect = function() {
+        return this.options.effect;
     };
 
     Window.prototype.centerWindow = function() {
@@ -174,13 +197,13 @@ var Window = null;
                 height: this.$el.outerHeight()
             };
         }
-
+        this.$el.trigger(namespace + '.centerWindow');
 
 
 
     };
 
-    Window.prototype.close = function() {
+    Window.prototype.close = function(cb) {
         var _this = this;
         this.$el.trigger('close');
         if (this.options.parent) {
@@ -191,15 +214,30 @@ var Window = null;
         } else if (this.options.window_manager && this.options.window_manager.windows.length > 0) {
             this.options.window_manager.setNextFocused();
         }
-        this.$el.fadeOut(function() {
+
+        var closeFn = function() {
+            _this.$el.trigger(namespace + '.close');
             _this.$el.remove();
-        });
+            if (cb) {
+                cb.call(_this);
+            }
+        };
+
+        if (this.options.effect === 'fade') {
+            this.$el.fadeOut(closeFn);
+        } else {
+            closeFn.call(_this.$el);
+        }
+
         if (this.$windowTab) {
             this.$windowTab.fadeOut(400, function() {
                 _this.$windowTab.remove();
             });
         }
+    };
 
+    Window.prototype.on = function() {
+        this.$el.on.apply(this.$el, arguments);
     };
 
     Window.prototype.setActive = function(active) {
@@ -208,12 +246,14 @@ var Window = null;
             if (this.$windowTab) {
                 this.$windowTab.addClass('label-primary');
             }
+            this.$el.trigger('active');
         } else {
             this.$el.removeClass('active');
             if (this.$windowTab) {
                 this.$windowTab.removeClass('label-primary');
                 this.$windowTab.addClass('label-default');
             }
+            this.$el.trigger('inactive');
         }
     };
 
@@ -421,6 +461,7 @@ var Window = null;
         if (options.width) {
             this.$el.css('width', options.width);
         }
+        this.$el.trigger(namespace + '.resize');
     };
 
     Window.prototype.setBlocker = function(window_handle) {
@@ -480,9 +521,9 @@ var Window = null;
                     _this.$el.addClass('active');
                 }
                 if (windowTab && focused) {
-                    windowTab.addClass('label-primary');    
+                    windowTab.addClass('label-primary');
                 }
-                
+
             }, 1000);
     };
 

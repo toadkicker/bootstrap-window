@@ -153,8 +153,7 @@ var Window = null;
             if (cb) {
                 cb.call(_this, arguments);
             }
-
-        }
+        };
         if (this.options.effect === 'fade') {
             this.$el.fadeIn(undefined, undefined, callbackHandler);
         } else {
@@ -164,11 +163,11 @@ var Window = null;
 
     Window.prototype.setEffect = function(effect) {
         this.options.effect = effect;
-    }
+    };
 
     Window.prototype.getEffect = function() {
         return this.options.effect;
-    }
+    };
 
     Window.prototype.centerWindow = function() {
         var top, left,
@@ -239,7 +238,7 @@ var Window = null;
 
     Window.prototype.on = function() {
         this.$el.on.apply(this.$el, arguments);
-    }
+    };
 
     Window.prototype.setActive = function(active) {
         if (active) {
