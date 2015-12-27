@@ -1,31 +1,34 @@
 var Window = null;
 (function($) {
-
     "use strict";
+    var namespace = 'bsw';
     Window = function(options) {
         options = options || {};
         var defaults = {
-                selectors: {
-                    handle: '.window-header',
-                    title: '.window-title',
-                    body: '.window-body',
-                    footer: '.window-footer'
-                },
-                elements: {
-                    handle: null,
-                    title: null,
-                    body: null,
-                    footer: null
-                },
-                references: {
-                    body: $('body'),
-                    window: $(window)
-                },
-                parseHandleForTitle: true,
-                title: 'No Title',
-                bodyContent: '',
-                footerContent: ''
-            };
+            selectors: {
+                handle: '.window-header',
+                title: '.window-title',
+                body: '.window-body',
+                footer: '.window-footer'
+            },
+            elements: {
+                handle: null,
+                title: null,
+                body: null,
+                footer: null
+            },
+            references: {
+                body: $('body'),
+                window: $(window)
+            },
+            effect: 'fade',
+            parseHandleForTitle: true,
+            maximized: false,
+            maximizable: false,
+            title: 'No Title',
+            bodyContent: '',
+            footerContent: ''
+        };
         this.options = $.extend(true, {}, defaults, options);
         this.initialize(this.options);
         return this;
@@ -36,16 +39,24 @@ var Window = null;
 
         if (options.fromElement) {
             if (options.fromElement instanceof jQuery) {
-                this.$el = options.fromElement;
+                this.$el = options.clone ? options.fromElement.clone() : options.fromElement;
             } else if (options.fromElement instanceof Element) {
-                this.$el = $(options.fromElement);
+                this.$el = options.clone ? $(options.fromElement).clone() : $(options.fromElement);
             } else if (typeof options.fromElement) {
-                this.$el = $(options.fromElement);
+                this.$el = options.clone ? $(options.fromElement).clone() : $(options.fromElement);
             }
         } else if (options.template) {
             this.$el = $(options.template);
         } else {
             throw new Error("No template specified for window.");
+        }
+        if (!this.$el.hasClass('window')) {
+            this.$el.addClass('window');
+        }
+        this.$el.data('window', this);
+
+        if (this.$el.find(options.selectors.handle).length <= 0) {
+            this.$el.prepend('<div class="window-header"><h4 class="window-title"></h4></div>');
         }
 
         options.elements.handle = this.$el.find(options.selectors.handle);
@@ -53,47 +64,112 @@ var Window = null;
         options.elements.body = this.$el.find(options.selectors.body);
         options.elements.footer = this.$el.find(options.selectors.footer);
         options.elements.title.html(options.title);
-        if (options.fromElement && _this.$el.find('[data-dismiss=window]').length <= 0) {
-            options.elements.title.append('<button class="close" data-dismiss="window">x</button>');
+
+        if (options.maximizable) {
+            options.elements.buttons = {};
+            options.elements.buttons.maximize = $('<button data-maximize="window"><i class="glyphicon glyphicon-chevron-up"></i></button>');
+            options.elements.handle.prepend(options.elements.buttons.maximize);
+            options.elements.buttons.restore = $('<button data-restore="window"><i class="glyphicon glyphicon-modal-window"></i></button>');
+            options.elements.handle.prepend(options.elements.buttons.restore);
+
+        }
+        if (_this.$el.find('[data-dismiss=window]').length <= 0) {
+            options.elements.handle.prepend('<button type="button" class="close" data-dismiss="window" aria-hidden="true"><i class="glyphicon glyphicon-remove"></i></button>');
         }
         options.elements.body.html(options.bodyContent);
         options.elements.footer.html(options.footerContent);
-        
+
         this.undock();
 
         this.setSticky(options.sticky);
     };
 
-    Window.prototype.undock = function () {
+    Window.prototype.undock = function() {
+        var _this = this;
         this.$el.css('visibility', 'hidden');
         this.$el.appendTo('body');
         this.centerWindow();
-        if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-            this.options.references.window.bind('orientationchange resize', function(event){
+        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            this.options.references.window.bind('orientationchange resize', function(event) {
                 _this.centerWindow();
             });
         }
 
-        this.$el.on('touchmove',function(e){
-              e.stopPropagation();
+        this.$el.on('touchmove', function(e) {
+            e.stopPropagation();
         });
 
         this.initHandlers();
         this.$el.hide();
         if (this.options.id) {
-            this.id = this. options.id;
+            this.id = this.options.id;
         } else {
             this.id = '';
         }
         this.show();
     };
 
-    Window.prototype.show = function () {
-        this.$el.css('visibility', 'visible');
-        this.$el.fadeIn();
+    Window.prototype.maximize = function() {
+        this.$el.removeClass('minimized');
+        this.$el.addClass('maximized');
+        this.state = "maximized";
+        var bottomOffset = 0;
+        if (this.options.window_manager) {
+            bottomOffset = this.options.window_manager.getContainer().height();
+        }
+        this.$el.css({
+            top: parseInt($('body').css('paddingTop'), 10),
+            left: 0,
+            right: 0,
+            bottom: bottomOffset,
+            maxWidth: 'none',
+            width: 'auto',
+            height: 'auto'
+        });
+        this.$el.trigger(namespace + '.maximize');
     };
 
-    Window.prototype.centerWindow = function () {
+
+    Window.prototype.restore = function() {
+        this.$el.removeClass('minimized');
+        this.$el.removeClass('maximized');
+        this.$el.removeAttr('style');
+        this.state = undefined;
+        this.$el.css({
+            top: this.window_info.top,
+            left: this.window_info.left,
+            width: this.window_info.width,
+            height: this.window_info.height
+        });
+        this.$el.removeProp('style');
+        this.$el.trigger(namespace + '.restore');
+    };
+
+    Window.prototype.show = function(cb) {
+        var _this = this;
+        this.$el.css('visibility', 'visible');
+        var callbackHandler = function() {
+            _this.$el.trigger(namespace + '.show');
+            if (cb) {
+                cb.call(_this, arguments);
+            }
+        };
+        if (this.options.effect === 'fade') {
+            this.$el.fadeIn(undefined, undefined, callbackHandler);
+        } else {
+            callbackHandler.call(this.$el);
+        }
+    };
+
+    Window.prototype.setEffect = function(effect) {
+        this.options.effect = effect;
+    };
+
+    Window.prototype.getEffect = function() {
+        return this.options.effect;
+    };
+
+    Window.prototype.centerWindow = function() {
         var top, left,
             bodyTop = parseInt(this.options.references.body.position().top, 10) + parseInt(this.options.references.body.css('paddingTop'), 10),
             maxHeight;
@@ -113,11 +189,22 @@ var Window = null;
 
         this.$el.css('left', left);
         this.$el.css('top', top);
+        if (this.$el && this.$el.length > 0) {
+            this.window_info = {
+                top: this.$el.position().top,
+                left: this.$el.position().left,
+                width: this.$el.outerWidth(),
+                height: this.$el.outerHeight()
+            };
+        }
+        this.$el.trigger(namespace + '.centerWindow');
+
+
+
     };
 
-    Window.prototype.close = function() {
+    Window.prototype.close = function(cb) {
         var _this = this;
-        this.$el.trigger('close');
         if (this.options.parent) {
             this.options.parent.clearBlocker();
             if (this.options.window_manager) {
@@ -126,15 +213,44 @@ var Window = null;
         } else if (this.options.window_manager && this.options.window_manager.windows.length > 0) {
             this.options.window_manager.setNextFocused();
         }
-        this.$el.fadeOut(function() {
+
+        var closeFn = function() {
+            _this.$el.trigger(namespace + '.close');
             _this.$el.remove();
-        });
-        if (this.$windowTab) {
-            this.$windowTab.fadeOut(400, function() {
-                _this.$windowTab.remove();
-            });
+            if (cb) {
+                cb.call(_this);
+            }
+        };
+
+        if (this.options.effect === 'fade') {
+            this.$el.fadeOut(closeFn);
+        } else {
+            closeFn.call(_this.$el);
         }
 
+        if (this.$windowTab) {
+            if (this.options.effect === 'fade') {
+                this.$windowTab.fadeOut(400, function() {
+                    _this.$windowTab.remove();
+                });
+            } else {
+                this.$windowTab.hide();
+                this.$windowTab.remove();
+            }
+
+        }
+    };
+
+    Window.prototype.on = function() {
+        this.$el.on.apply(this.$el, arguments);
+    };
+
+    Window.prototype.sendToBack = function () {
+        var returnVal = false;
+        if (this.options.window_manager) {
+            returnVal = this.options.window_manager.sendToBack(this);
+        }
+        return returnVal;
     };
 
     Window.prototype.setActive = function(active) {
@@ -143,12 +259,14 @@ var Window = null;
             if (this.$windowTab) {
                 this.$windowTab.addClass('label-primary');
             }
+            this.$el.trigger('active');
         } else {
             this.$el.removeClass('active');
             if (this.$windowTab) {
                 this.$windowTab.removeClass('label-primary');
                 this.$windowTab.addClass('label-default');
             }
+            this.$el.trigger('inactive');
         }
     };
 
@@ -188,18 +306,37 @@ var Window = null;
         return this.options.sticky;
     };
 
-    Window.prototype.setManager = function (window_manager) {
+    Window.prototype.setManager = function(window_manager) {
         this.options.window_manager = window_manager;
     };
 
     Window.prototype.initHandlers = function() {
         var _this = this;
+        var title_buttons;
 
         this.$el.find('[data-dismiss=window]').on('click', function(event) {
+            event.stopPropagation();
+            event.preventDefault();
             if (_this.options.blocker) {
                 return;
             }
             _this.close();
+        });
+
+        this.$el.find('[data-maximize=window]').on('click', function(event) {
+            event.stopPropagation();
+            event.preventDefault();
+            if (_this.options.blocker) {
+                return;
+            }
+            _this.maximize();
+        });
+
+        this.$el.find('[data-restore=window]').on('click', function(event) {
+            if (_this.options.blocker) {
+                return;
+            }
+            _this.restore();
         });
 
         this.$el.off('mousedown');
@@ -211,7 +348,7 @@ var Window = null;
             } else {
                 _this.$el.trigger('focused');
             }
-            
+
             if (_this.$el.hasClass('ns-resize') || _this.$el.hasClass('ew-resize')) {
                 $('body > *').addClass('disable-select');
                 _this.resizing = true;
@@ -221,8 +358,8 @@ var Window = null;
                 _this.window_info = {
                     top: _this.$el.position().top,
                     left: _this.$el.position().left,
-                    width: _this.$el.width(),
-                    height: _this.$el.height()
+                    width: _this.$el.outerWidth(),
+                    height: _this.$el.outerHeight()
                 };
 
                 if (event.offsetY < 5) {
@@ -240,7 +377,7 @@ var Window = null;
             }
         });
 
-        _this.options.references.body.on('mouseup', function () {
+        _this.options.references.body.on('mouseup', function() {
             _this.resizing = false;
             $('body > *').removeClass('disable-select');
             _this.$el.removeClass('west');
@@ -265,33 +402,44 @@ var Window = null;
             $('body > *').removeClass('disable-select');
         });
 
-        _this.options.references.body.on('mousemove', function(event) {
-            if (_this.moving) {
+
+        _this.options.references.body.on('mousemove', _this.$el, function(event) {
+            if (_this.moving && _this.state !== "maximized" &&
+                (
+                    $(event.toElement).hasClass(_this.options.selectors.handle.replace('.', '')) ||
+                    $(event.toElement).hasClass(_this.options.selectors.title.replace('.', ''))
+                )) {
+
+
                 var top = _this.options.elements.handle.position().top,
                     left = _this.options.elements.handle.position().left;
                 _this.$el.css('top', event.pageY - _this.offset.y);
+                _this.window_info.top = event.pageY - _this.offset.y;
                 _this.$el.css('left', event.pageX - _this.offset.x);
+                _this.window_info.left = event.pageX - _this.offset.x;
+                _this.window_info.width = _this.$el.outerWidth();
+                _this.window_info.height = _this.$el.outerHeight();
             }
             if (_this.options.resizable && _this.resizing) {
                 if (_this.$el.hasClass("east")) {
                     _this.$el.css('width', event.pageX - _this.window_info.left);
                 }
                 if (_this.$el.hasClass("west")) {
-                    
+
                     _this.$el.css('left', event.pageX);
-                    _this.$el.css('width', _this.window_info.width + (_this.window_info.left  - event.pageX));
+                    _this.$el.css('width', _this.window_info.width + (_this.window_info.left - event.pageX));
                 }
                 if (_this.$el.hasClass("south")) {
                     _this.$el.css('height', event.pageY - _this.window_info.top);
                 }
                 if (_this.$el.hasClass("north")) {
                     _this.$el.css('top', event.pageY);
-                    _this.$el.css('height', _this.window_info.height + (_this.window_info.top  - event.pageY));
+                    _this.$el.css('height', _this.window_info.height + (_this.window_info.top - event.pageY));
                 }
             }
         });
 
-        this.$el.on('mousemove', function (event) {
+        this.$el.on('mousemove', function(event) {
             if (_this.options.blocker) {
                 return;
             }
@@ -312,7 +460,7 @@ var Window = null;
         });
     };
 
-    Window.prototype.resize = function (options) {
+    Window.prototype.resize = function(options) {
         options = options || {};
         if (options.top) {
             this.$el.css('top', options.top);
@@ -326,60 +474,83 @@ var Window = null;
         if (options.width) {
             this.$el.css('width', options.width);
         }
+        this.$el.trigger(namespace + '.resize');
     };
 
-    Window.prototype.setBlocker = function (window_handle) {
+    Window.prototype.setBlocker = function(window_handle) {
         this.options.blocker = window_handle;
         this.$el.find('.disable-shade').remove();
         var shade = '<div class="disable-shade"></div>';
         this.options.elements.body.append(shade);
         this.options.elements.body.addClass('disable-scroll');
         this.options.elements.footer.append(shade);
-        this.$el.find('.disable-shade').fadeIn();
+        if (this.options.effect === 'fade') {
+            this.$el.find('.disable-shade').fadeIn();
+        } else {
+            this.$el.find('.disable-shade').show();
+        }
+
         if (!this.options.blocker.getParent()) {
             this.options.blocker.setParent(this);
         }
     };
 
 
-    Window.prototype.getBlocker = function () {
+    Window.prototype.getBlocker = function() {
         return this.options.blocker;
     };
 
-    Window.prototype.clearBlocker = function () {
+    Window.prototype.clearBlocker = function() {
         this.options.elements.body.removeClass('disable-scroll');
-        this.$el.find('.disable-shade').fadeOut(function () {
+        if (this.options.effect === 'fade') {
+            this.$el.find('.disable-shade').fadeOut(function() {
+                this.remove();
+            });
+        } else {
+            this.$el.find('.disable-shade').hide();
             this.remove();
-        });
+        }
+
         delete this.options.blocker;
     };
 
-    Window.prototype.setParent = function (window_handle) {
+    Window.prototype.setParent = function(window_handle) {
         this.options.parent = window_handle;
         if (!this.options.parent.getBlocker()) {
             this.options.parent.setBlocker(this);
         }
     };
 
-    Window.prototype.getParent = function () {
+    Window.prototype.getParent = function() {
         return this.options.parent;
     };
 
-    Window.prototype.blink = function () {
+    Window.prototype.blink = function() {
         var _this = this,
             active = this.$el.hasClass('active'),
 
-            blinkInterval = setInterval(function () {
-            _this.$el.toggleClass('active');
-        }, 250),
-            blinkTimeout = setTimeout(function () {
-            clearInterval(blinkInterval);
-            if (active) {
-                _this.$el.addClass('active');
-            }
-        }, 1000);
+            windowTab = this.getWindowTab(),
+            focused = windowTab ? windowTab.hasClass('label-primary') : undefined,
+
+            blinkInterval = setInterval(function() {
+                _this.$el.toggleClass('active');
+                if (windowTab) {
+                    windowTab.toggleClass('label-primary');
+                }
+
+            }, 250),
+            blinkTimeout = setTimeout(function() {
+                clearInterval(blinkInterval);
+                if (active) {
+                    _this.$el.addClass('active');
+                }
+                if (windowTab && focused) {
+                    windowTab.addClass('label-primary');
+                }
+
+            }, 1000);
     };
- 
+
     $.fn.window = function(options) {
         options = options || {};
         var newWindow,
@@ -392,12 +563,9 @@ var Window = null;
                 this.find(window_opts.selectors.handle).css('cursor', 'move');
             }
 
-            if (!$(this).hasClass('window')) {
-                $(this).addClass('window');
-            }
             newWindow = new Window($.extend({}, window_opts, window_opts));
-            this.data('window', newWindow);
-            
+            //this.data('window', newWindow);
+
 
         } else if (typeof options === "string") {
             switch (options) {
@@ -407,6 +575,9 @@ var Window = null;
                 case "show":
                     this.data('window').show();
                     break;
+                case "maximize":
+                    this.data('window').maximize();
+                    break;
                 default:
                     break;
             }
@@ -414,13 +585,15 @@ var Window = null;
 
 
         return this;
-        
+
     };
 
     $('[data-window-target]').off('click');
-    $('[data-window-target]').on('click', function () {
+    $('[data-window-target]').on('click', function() {
         var $this = $(this),
-            opts = {selectors:{}};
+            opts = {
+                selectors: {}
+            };
         if ($this.data('windowTitle')) {
             opts.title = $this.data('windowTitle');
         }
@@ -432,8 +605,11 @@ var Window = null;
         if ($this.data('windowHandle')) {
             opts.selectors.handle = $this.data('windowHandle');
         }
+        if ($this.data('clone')) {
+            opts.clone = $this.data('windowHandle');
+        }
 
-        $($this.data('windowTarget')).window(opts); 
+        $($this.data('windowTarget')).window(opts);
     });
 }(jQuery));
 ;var WindowManager = null;
@@ -459,13 +635,19 @@ var Window = null;
 
     WindowManager.prototype.destroyWindow = function(window_handle) {
         var _this = this;
+        var returnVal = false;
         $.each(this.windows, function(index, window) {
             if (window === window_handle) {
+                window_handle.close();
                 _this.windows.splice(index, 1);
                 _this.resortWindows();
+                returnVal = true;
             }
         });
+        return returnVal;
     };
+
+    WindowManager.prototype.closeWindow = WindowManager.prototype.destroyWindow;
 
     WindowManager.prototype.resortWindows = function() {
         var startZIndex = 900;
@@ -487,22 +669,39 @@ var Window = null;
             }
         });
         this.windows.push(this.windows.splice(focusedWindowIndex, 1)[0]);
-        
-
         focused_window.setActive(true);
         this.resortWindows();
 
     };
 
+    WindowManager.prototype.sendToBack = function(window) {
+        var windowHandle = this.windows.splice(this.windows.indexOf(window), 1)[0];
+        this.windows.unshift(windowHandle);
+        this.resortWindows();
+        return true;
+    };
+
+
     WindowManager.prototype.initialize = function(options) {
         this.options = options;
+        this.elements = {};
+
         if (this.options.container) {
-            $(this.options.container).addClass('window-pane');
+            this.elements.container = $(this.options.container);
+            this.elements.container.addClass('window-pane');
         }
     };
 
-    WindowManager.prototype.setNextFocused = function () {
-        this.setFocused(this.windows[this.windows.length-1]);
+    WindowManager.prototype.getContainer = function() {
+        var returnVal;
+        if (this.elements && this.elements.container) {
+            returnVal = this.elements.container;
+        }
+        return returnVal;
+    };
+
+    WindowManager.prototype.setNextFocused = function() {
+        this.setFocused(this.windows[this.windows.length - 1]);
     };
 
     WindowManager.prototype.addWindow = function(window_object) {
@@ -521,14 +720,24 @@ var Window = null;
         if (this.options.container) {
             window_object.setWindowTab($('<span class="label label-default">' + window_object.getTitle() + '<button class="close">x</button></span>'));
             window_object.getWindowTab().find('.close').on('click', function(event) {
-                window_object.close();
-            });
-            window_object.getWindowTab().on('click', function(event) {
-                _this.setFocused(window_object);
-                if (window_object.getSticky()) {
-                    window.scrollTo(0, window_object.getElement().position().top);
+                var blocker = window_object.getBlocker();
+                if (!blocker) {
+                    window_object.close();
+                } else {
+                    blocker.blink();
                 }
 
+            });
+            window_object.getWindowTab().on('click', function(event) {
+                var blocker = window_object.getBlocker();
+                if (!blocker) {
+                    _this.setFocused(window_object);
+                    if (window_object.getSticky()) {
+                        window.scrollTo(0, window_object.getElement().position().top);
+                    }
+                } else {
+                    blocker.blink();
+                }
             });
 
             $(this.options.container).append(window_object.getWindowTab());
@@ -548,8 +757,8 @@ var Window = null;
         }
 
         var newWindow = new Window(final_options);
-        
-        
+
+
         return this.addWindow(newWindow);
     };
 }(jQuery));
