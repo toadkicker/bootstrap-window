@@ -1,6 +1,7 @@
 var Window = null;
 (function($) {
     "use strict";
+    var namespace = 'bsw';
     Window = function(options) {
         options = options || {};
         var defaults = {
@@ -124,6 +125,7 @@ var Window = null;
             width: 'auto',
             height: 'auto'
         });
+        this.$el.trigger(namespace + '.maximize');
     };
 
 
@@ -139,11 +141,20 @@ var Window = null;
             height: this.window_info.height
         });
         this.$el.removeProp('style');
+        this.$el.trigger(namespace + '.restore');
     };
 
-    Window.prototype.show = function() {
+    Window.prototype.show = function(cb) {
+        var _this = this;
         this.$el.css('visibility', 'visible');
-        this.$el.fadeIn();
+        this.$el.fadeIn(undefined, undefined, function () {
+            _this.$el.trigger(namespace + '.show');
+            if (cb) {
+                cb.call(_this, arguments);    
+            }
+            
+        });
+
     };
 
     Window.prototype.centerWindow = function() {
@@ -174,13 +185,13 @@ var Window = null;
                 height: this.$el.outerHeight()
             };
         }
-
+        this.$el.trigger(namespace + '.centerWindow');
 
 
 
     };
 
-    Window.prototype.close = function() {
+    Window.prototype.close = function(cb) {
         var _this = this;
         this.$el.trigger('close');
         if (this.options.parent) {
@@ -193,6 +204,10 @@ var Window = null;
         }
         this.$el.fadeOut(function() {
             _this.$el.remove();
+            if (cb) {
+                cb.call(_this);
+            }
+            _this.$el.trigger(namespace + '.close');
         });
         if (this.$windowTab) {
             this.$windowTab.fadeOut(400, function() {
@@ -421,6 +436,7 @@ var Window = null;
         if (options.width) {
             this.$el.css('width', options.width);
         }
+        this.$el.trigger(namespace + '.resize');
     };
 
     Window.prototype.setBlocker = function(window_handle) {
