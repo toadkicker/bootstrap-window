@@ -31,6 +31,9 @@ var Window = null;
                     },
                     restore: {
                         class: "glyphicon glyphicon-modal-window"
+                    },
+                    close: {
+                        class: "glyphicon glyphicon-remove"
                     }
                 }
             },
@@ -78,7 +81,7 @@ var Window = null;
         options.elements.title = this.$el.find(options.selectors.title);
         options.elements.body = this.$el.find(options.selectors.body);
         options.elements.footer = this.$el.find(options.selectors.footer);
-        options.elements.title.html(options.title);
+        this.setTitle(options.title);
 
 
         if (options.minimizable) {
@@ -99,10 +102,10 @@ var Window = null;
 
 
         if (_this.$el.find('[data-dismiss=window]').length <= 0) {
-            options.elements.handle.prepend('<button type="button" class="close interface" data-dismiss="window" aria-hidden="true"><i class="glyphicon glyphicon-remove"></i></button>');
+            options.elements.handle.prepend('<button type="button" class="close interface" data-dismiss="window" aria-hidden="true"><i class="' + options.interface.buttons.close.class + '"></i></button>');
         }
-        options.elements.body.html(options.bodyContent);
-        options.elements.footer.html(options.footerContent);
+        this.setBodyContent(options.bodyContent);
+        this.setFooterContent(options.footerContent);
 
         this.undock();
 
@@ -132,6 +135,13 @@ var Window = null;
             this.id = '';
         }
         this.show();
+    };
+
+    Window.prototype.setBodyContent = function(content) {
+        this.options.elements.body.html(content);
+    };
+    Window.prototype.setFooterContent = function(content) {
+        this.options.elements.footer.html(content);
     };
 
     Window.prototype.maximize = function() {
@@ -171,6 +181,9 @@ var Window = null;
         } else {
             this.$el.hide();
             this.$el.removeAttr('style');
+        }
+        if (this.options.window_manager) {
+            this.options.window_manager.setNextFocused();
         }
         this.$el.trigger(namespace + '.minimize');
     };
@@ -350,6 +363,10 @@ var Window = null;
         return this.options.title;
     };
 
+    Window.prototype.setTitle = function(title) {
+        this.options.elements.title.html(title);
+    };
+
     Window.prototype.getElement = function() {
         return this.$el;
     };
@@ -478,10 +495,10 @@ var Window = null;
 
 
         _this.options.references.body.on('mousemove', _this.$el, function(event) {
-            if (_this.moving && _this.state !== "maximized" &&
-                (
-                    $(event.toElement).hasClass(_this.options.selectors.handle.replace('.', '')) ||
-                    $(event.toElement).hasClass(_this.options.selectors.title.replace('.', ''))
+            if (_this.moving && !_this.isMaximized() &&
+                (!$(event.toElement).is('[data-maximize=window]') &&
+                    !$(event.toElement).is('[data-minimize=window]') &&
+                    !$(event.toElement).is('[data-restore=window]')
                 )) {
 
 

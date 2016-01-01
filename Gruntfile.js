@@ -1,4 +1,4 @@
-module.exports = function (grunt) {
+module.exports = function(grunt) {
 
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
@@ -24,6 +24,14 @@ module.exports = function (grunt) {
         },
         qunit: {
             files: ['test/**/*.html']
+        },
+
+        blanket: {
+            options: {
+            },
+            files: {
+                'src-cov/': ['src/'],
+            },
         },
         jshint: {
             files: ['Gruntfile.js', 'src/js/**/*.js', 'test/**/*.js'],
@@ -109,6 +117,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-bower-task');
+    grunt.loadNpmTasks('grunt-blanket');
 
 
     grunt.registerTask('test', ['bower', 'jshint', 'qunit']);

@@ -45,19 +45,22 @@ var WindowManager = null;
 
     WindowManager.prototype.setFocused = function(focused_window) {
         var focusedWindowIndex;
-        while (focused_window.getBlocker()) {
-            focused_window = focused_window.getBlocker();
-        }
-        $.each(this.windows, function(index, windowHandle) {
-            windowHandle.setActive(false);
-            if (windowHandle === focused_window) {
-                focusedWindowIndex = index;
+        if (focused_window) {
+            while (focused_window.getBlocker()) {
+                focused_window = focused_window.getBlocker();
             }
-        });
-        this.windows.push(this.windows.splice(focusedWindowIndex, 1)[0]);
-        focused_window.setActive(true);
-        this.resortWindows();
+            $.each(this.windows, function(index, windowHandle) {
+                windowHandle.setActive(false);
+                if (windowHandle === focused_window) {
+                    focusedWindowIndex = index;
+                }
+            });
+            this.windows.push(this.windows.splice(focusedWindowIndex, 1)[0]);
+            focused_window.setActive(true);
+            this.resortWindows();
+        }
 
+        return true;
     };
 
     WindowManager.prototype.sendToBack = function(window) {
@@ -67,6 +70,18 @@ var WindowManager = null;
         return true;
     };
 
+    WindowManager.prototype.getTopVisibleWindow = function() {
+        var win;
+        for (var i = this.windows.length - 1; i > 0; i--) {
+            win = this.windows[i];
+            if (!win.isMinimized()) {
+                break;
+            }
+        }
+        return win;
+    };
+
+    WindowManager.prototype.bringToFront = WindowManager.prototype.setFocused;
 
     WindowManager.prototype.initialize = function(options) {
         this.options = options;
@@ -87,7 +102,7 @@ var WindowManager = null;
     };
 
     WindowManager.prototype.setNextFocused = function() {
-        this.setFocused(this.windows[this.windows.length - 1]);
+        this.setFocused(this.getTopVisibleWindow());
     };
 
     WindowManager.prototype.addWindow = function(window_object) {
