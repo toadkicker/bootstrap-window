@@ -32,6 +32,20 @@
             display: inline-block;
         }
     }
+    &.minimized {
+        .window-header {
+            cursor: default;
+        }
+        .window-body, .window-footer {
+            display: none;
+        }
+        [data-maximize=window] {
+            display: none;
+        }
+        [data-restore=window] {
+            display: inline-block;
+        }
+    }
     .window-header {
         cursor: move;
         min-height: 16.428571429px;

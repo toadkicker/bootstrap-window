@@ -104,16 +104,20 @@
 
     QUnit.test('eventTriggers (fade effect)', function(assert) {
         var done = assert.async();
-        assert.expect(4);
+        assert.expect(5);
         win.on('bsw.show', function() {
             ok(true, "show trigger fires properly");
         });
-
 
         win.on('bsw.maximize', function() {
             ok(true, "maximize trigger fires properly");
         });
         win.maximize();
+
+        win.on('bsw.minimize', function() {
+            ok(true, "minimize trigger fires properly");
+        });
+        win.minimize();
 
         win.on('bsw.restore', function() {
             ok(true, "restore trigger fires properly");
@@ -134,7 +138,7 @@
 
 QUnit.test('eventTriggers (no effect)', function(assert) {
         var done = assert.async();
-        assert.expect(4);
+        assert.expect(5);
         win.options.effect = "none";
         win.on('bsw.show', function() {
             ok(true, "show trigger fires properly");
@@ -146,6 +150,11 @@ QUnit.test('eventTriggers (no effect)', function(assert) {
             ok(true, "maximize trigger fires properly");
         });
         win.maximize();
+
+        win.on('bsw.minimize', function() {
+            ok(true, "minimize trigger fires properly");
+        });
+        win.minimize();
 
         win.on('bsw.restore', function() {
             ok(true, "restore trigger fires properly");

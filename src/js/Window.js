@@ -110,6 +110,14 @@ var Window = null;
     };
 
     Window.prototype.maximize = function() {
+        this.$el.beforeMinimized = {
+            top: this.$el.css('top'),
+            left: this.$el.css('left'),
+            bottom: this.$el.css('bottom'),
+            right: this.$el.css('right'),
+            height: this.$el.css('height'),
+            width: this.$el.css('width')
+        };
         this.$el.removeClass('minimized');
         this.$el.addClass('maximized');
         this.state = "maximized";
@@ -129,19 +137,63 @@ var Window = null;
         this.$el.trigger(namespace + '.maximize');
     };
 
+    Window.prototype.minimize = function (event) {
+        this.$el.beforeMinimized = {
+            top: this.$el.css('top'),
+            left: this.$el.css('left'),
+            bottom: this.$el.css('bottom'),
+            right: this.$el.css('right'),
+            height: this.$el.css('height'),
+            width: this.$el.css('width')
+        };
+        this.$el.addClass('minimized');
+        this.$el.removeClass('maximized');
+        this.state = "minimized";
+        var topOffset = 0;
+        if (this.options.window_manager) {
+            topOffset = this.options.window_manager.getContainer().height();
+        }
+        this.$el.css({
+            top: topOffset,
+            left: '280px',
+            right: 'auto',
+            bottom: 0,
+            maxWidth: 'none',
+            width: 'auto',
+            height: '60px'
+        });
+        this.$el.trigger(namespace + '.minimize');
+    };
+
+    Window.prototype.toggleMinMax = function (event) {
+      if (this.state === "maximized") {
+        return this.restore();
+      }
+      if(this.state === "minimized") {
+        return this.restore();
+      }
+      if (this.state === undefined) {
+        return this.minimize();
+      }
+    };
 
     Window.prototype.restore = function() {
         this.$el.removeClass('minimized');
         this.$el.removeClass('maximized');
         this.$el.removeAttr('style');
         this.state = undefined;
-        this.$el.css({
-            top: this.window_info.top,
-            left: this.window_info.left,
-            width: this.window_info.width,
-            height: this.window_info.height
-        });
-        this.$el.removeProp('style');
+        if(this.$el.beforeMinimized) {
+            this.$el.css(this.$el.beforeMinimized);
+            delete this.$el.beforeMinimized;
+        } else {
+            this.$el.css({
+                top: this.window_info.top,
+                left: this.window_info.left,
+                width: this.window_info.width,
+                height: this.window_info.height
+            });
+            this.$el.removeProp('style');
+        }
         this.$el.trigger(namespace + '.restore');
     };
 
@@ -332,6 +384,24 @@ var Window = null;
             _this.maximize();
         });
 
+        this.$el.find('[data-minimize=window]').on('click', function(event) {
+            event.stopPropagation();
+            event.preventDefault();
+            if (_this.options.blocker) {
+                return;
+            }
+            _this.minimize();
+        });
+
+      this.$el.find('[data-toggle=window]').on('click', function(event) {
+            event.stopPropagation();
+            event.preventDefault();
+            if (_this.options.blocker) {
+                return;
+            }
+            _this.toggleMinMax();
+        });
+
         this.$el.find('[data-restore=window]').on('click', function(event) {
             if (_this.options.blocker) {
                 return;
@@ -340,6 +410,7 @@ var Window = null;
         });
 
         this.$el.off('mousedown');
+        this.$el.off('mouseleave');
         this.$el.on('mousedown', function() {
             if (_this.options.blocker) {
                 _this.options.blocker.getElement().trigger('focused');
@@ -387,6 +458,7 @@ var Window = null;
 
         });
         _this.options.elements.handle.off('mousedown');
+        _this.options.elements.handle.off('mouseleave');
         _this.options.elements.handle.on('mousedown', function(event) {
             if (_this.options.blocker) {
                 return;
