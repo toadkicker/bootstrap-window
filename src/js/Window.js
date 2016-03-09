@@ -80,14 +80,14 @@ var Window = null;
 
         if (options.maximizable) {
           options.elements.buttons = {};
-          options.elements.buttons.maximize = $('<button data-maximize="window"><i class="' + options.iconFamily + ' ' + options.iconClasses[options.iconFamily]["maximize"] +'"></i></button>');
+          options.elements.buttons.maximize = $('<button data-maximize="window"><i class="' + options.iconFamily + ' ' + options.iconClasses[options.iconFamily].maximize +'"></i></button>');
           options.elements.handle.prepend(options.elements.buttons.maximize);
-          options.elements.buttons.restore = $('<button data-restore="window"><i class="' + options.iconFamily + ' ' + options.iconClasses[options.iconFamily]["restore"] + '"></i></button>');
+          options.elements.buttons.restore = $('<button data-restore="window"><i class="' + options.iconFamily + ' ' + options.iconClasses[options.iconFamily].restore + '"></i></button>');
           options.elements.handle.prepend(options.elements.buttons.restore);
 
         }
         if (_this.$el.find('[data-dismiss=window]').length <= 0) {
-          options.elements.handle.prepend('<button type="button" class="close" data-dismiss="window" aria-hidden="true"><i class="' + options.iconFamily + ' ' + options.iconClasses[options.iconFamily]["remove"] +'"></i></button>');
+          options.elements.handle.prepend('<button type="button" class="close" data-dismiss="window" aria-hidden="true"><i class="' + options.iconFamily + ' ' + options.iconClasses[options.iconFamily].remove +'"></i></button>');
         }
         options.elements.body.html(options.bodyContent);
         options.elements.footer.html(options.footerContent);
