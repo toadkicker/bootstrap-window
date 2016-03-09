@@ -21,6 +21,21 @@ var Window = null;
                 body: $('body'),
                 window: $(window)
             },
+            iconFamily: 'glyphicon',
+            iconClasses: {
+              "glyphicon": {
+                "minimize": "glyphicon-chevron-down",
+                "maximize": "glyphicon-chevron-up",
+                "restore": "glyphicon-modal-window",
+                "remove": "glyphicon-remove"
+              },
+              "fa": {
+                "minimize": "fa-minus",
+                "maximize": "fa-plus",
+                "restore": "fa-minus-square-o",
+                "remove": "fa-times"
+              }
+            },
             effect: 'fade',
             parseHandleForTitle: true,
             maximized: false,
@@ -66,15 +81,17 @@ var Window = null;
         options.elements.title.html(options.title);
 
         if (options.maximizable) {
-            options.elements.buttons = {};
-            options.elements.buttons.maximize = $('<button data-maximize="window"><i class="glyphicon glyphicon-chevron-up"></i></button>');
-            options.elements.handle.prepend(options.elements.buttons.maximize);
-            options.elements.buttons.restore = $('<button data-restore="window"><i class="glyphicon glyphicon-modal-window"></i></button>');
-            options.elements.handle.prepend(options.elements.buttons.restore);
+          options.elements.buttons = {};
+          options.elements.buttons.minimize = $('<button data-minimize="window"><i class="' + options.iconFamily + ' ' + options.iconClasses[options.iconFamily].minimize +'"></i></button>');
+          options.elements.handle.prepend(options.elements.buttons.minimize);
+          options.elements.buttons.maximize = $('<button data-maximize="window"><i class="' + options.iconFamily + ' ' + options.iconClasses[options.iconFamily].maximize +'"></i></button>');
+          options.elements.handle.prepend(options.elements.buttons.maximize);
+          options.elements.buttons.restore = $('<button data-restore="window"><i class="' + options.iconFamily + ' ' + options.iconClasses[options.iconFamily].restore + '"></i></button>');
+          options.elements.handle.prepend(options.elements.buttons.restore);
 
         }
         if (_this.$el.find('[data-dismiss=window]').length <= 0) {
-            options.elements.handle.prepend('<button type="button" class="close" data-dismiss="window" aria-hidden="true"><i class="glyphicon glyphicon-remove"></i></button>');
+          options.elements.handle.prepend('<button type="button" class="close" data-dismiss="window" aria-hidden="true"><i class="' + options.iconFamily + ' ' + options.iconClasses[options.iconFamily].remove +'"></i></button>');
         }
         options.elements.body.html(options.bodyContent);
         options.elements.footer.html(options.footerContent);
