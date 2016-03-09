@@ -56,6 +56,39 @@ var exampleWindow = windowManager.createWindow({
 });
 ```
 
+#### Configuration Options
+You can choose between `fa` or `glyphicon` by setting iconFamily in your options.
+```javascript
+var exampleWindow = new Window({
+    iconFamily: 'fa',
+    template: $('#template_element').html(),
+    title: "Bootstrap Window",
+    bodyContent: "some body content",
+    footerContent: '<button type="button" class="btn btn-default" data-dismiss="window">Close</button><button type="button" class="btn btn-primary">Submit</button>'
+});
+```
+
+Additionally you can override what icons are used with your own configuration:
+
+```javascript
+var exampleWindow = new Window({
+    iconClasses: { 
+      awesomerIcons: {
+        "maximize": "awesome-maximize",
+        "minimize": "awesome-minimize",
+        "restore": "awesome-restore"
+      }
+    },
+    iconFamily: "awesomerIcons",
+    template: $('#template_element').html(),
+    title: "Bootstrap Window",
+    bodyContent: "some body content",
+    footerContent: '<button type="button" class="btn btn-default" data-dismiss="window">Close</button><button type="button" class="btn btn-primary">Submit</button>'
+});
+```
+
+Please note your custom font classes must output the same style classes as fontAwesome and glyphicons, `"fa fa-maximize" = "awesome awesome-maximize"`.
+
 
 #### Quick Window
 Quick Windows can be created via a simple markup API.
